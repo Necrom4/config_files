@@ -218,6 +218,17 @@ return {
       hl = { fg = colors.red_6, bg = colors.red_2 },
     }
 
+    ------
+
+    local Navic = {
+      condition = function() return require("nvim-navic").is_available() end,
+      provider = function()
+        return require("nvim-navic").get_location({highlight=false})
+      end,
+      hl = { fg = colors.red_2, bg = colors.red_6 },
+      update = 'CursorMoved'
+    }
+
     local WinBars = {
       fallthrough = false,
       {   -- An inactive winbar for regular files
@@ -231,7 +242,7 @@ return {
     }
 
     return {
-      statusline = { ViMode, FileModified, Separator, InsertIndicator, Space, FileNameBlock, Align, Space, Git, Space, CursorPosition, Space, ScrollBar },
+      statusline = { ViMode, FileModified, Separator, InsertIndicator, Space, FileNameBlock, Space, Navic, Align, Space, Git, Space, CursorPosition, Space, ScrollBar },
       winbar = { WinBars },
       opts = {
         disable_winbar_cb = function(args)

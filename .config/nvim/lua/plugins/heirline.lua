@@ -82,6 +82,14 @@ return {
     }
     -- We can now define some children separately and add them later
 
+    local FileNameWin = {
+      -- let's first set up some attributes needed by this component and its children
+      init = function(self)
+        self.filename = vim.api.nvim_buf_get_name(0)
+      end,
+    }
+    -- We can now define some children separately and add them later
+
     local FilePath = {
       provider = function(self)
         local path = vim.fn.fnamemodify(self.filename, ":h")
@@ -122,6 +130,10 @@ return {
     FileName,
     FileIcon,
     FileFlags
+    )
+    FileNameWin = utils.insert(FileNameWin,
+    { provider = '%<'},
+    FileName
     )
 
     local Git = {
@@ -206,8 +218,30 @@ return {
       hl = { fg = colors.red_6, bg = colors.red_2 },
     }
 
+    local WinBars = {
+      fallthrough = false,
+      {   -- An inactive winbar for regular files
+        condition = function()
+          return not conditions.is_active()
+        end,
+        utils.surround({ "█", "█" }, colors.red_6, { hl = { fg = colors.red_3, force = true }, FileNameWin }),
+      },
+      -- A winbar for regular files
+      utils.surround({ "█", "█" }, colors.red_5, { hl = { fg = colors.red_2, force = true }, FileNameWin }),
+    }
+
     return {
       statusline = { ViMode, FileModified, Separator, InsertIndicator, Space, FileNameBlock, Align, Space, Git, Space, CursorPosition, Space, ScrollBar },
+      winbar = { WinBars },
+      opts = {
+        disable_winbar_cb = function(args)
+          return conditions.buffer_matches({
+            buftype = { "nofile", "prompt", "help", "quickfix", "terminal" },
+            filetype = { "^git.*", "fugitive", "Trouble", "dashboard" },
+          }, args.buf)
+        end,
+      }
+
     }
   end
 }
